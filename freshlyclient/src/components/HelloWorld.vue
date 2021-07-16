@@ -1,38 +1,100 @@
 <template>
-  <div>
-    <b-table 
-      :items="items">
-    </b-table>
-    <h1>{{ order }}</h1>
-  </div>
+  <b-container>
+
+    <div class= "container mt-4" id="tableOfOrders">
+      <b-table 
+        bordered
+        small
+        fixed
+        :fields="fields"
+        :items="orders"
+        >
+
+          <template>
+            <b-button variant="danger">Editar</b-button>
+          </template>
+      </b-table>
+      <h1>{{test}}</h1>
+    </div>
+  </b-container>
 </template>
 
 <script>
 export default {
   name: 'HelloWorld',
-  props: {
-  },
   data() {
       return {
-        items: [
-          { age: 40, first_name: 'Dickerson', last_name: 'Macdonald' },
-          { age: 21, first_name: 'Larsen', last_name: 'Shaw' },
-          { age: 89, first_name: 'Geneva', last_name: 'Wilson' },
-          { age: 38, first_name: 'Jami', last_name: 'Carney' }
+        test: 0,
+        fields: [
+          {
+           key: 'reference',
+           label: 'Identificador',
+           sortable: true
+          },
+          {
+           key: 'date_add',
+           label: 'Fecha',
+          
+          },
+          {
+            key: 'firstname',
+            label: 'Nombre',
+          },
+          {
+           key: 'lastname',
+           label: 'Apellidos',
+          },
+          {
+           key: 'address1',
+           label: 'Dirección de envío 1',
+          },
+          {
+           key:  'address2',
+           label: 'Dirección de envío 2',
+          },
+          {
+           key:  'city',
+           label: 'Ciudad',
+          },
+          {
+           key: 'reference',
+           label: 'País',
+          },
+          {
+           key: 'product_name',
+           label: 'Productos',
+          },
+          {
+           key: 'product_quantity',
+           label: 'Cantidad',
+          },
+          {
+           key: 'name',
+           label: 'Estado del pedido',
+          },
+          {
+           label: 'Editar',
+          },
+        
         ],
-        order: 0
+        orders: {}
       }
+  },
+  mounted() {
+    this.getOrders();
   },
   methods: {
         getOrders() {
         this.$http.get('http://127.0.0.1:8000/api/orders/')
           .then(Response => {
-            this.order = Response.body.order[0].reference;
+            this.orders = Response.body.order;
+            console.log(Response.body.order[0].reference);
 
           }, error => {
             console.log("ERROR = ", error);
           });
       },
+
   }
 }
 </script>
