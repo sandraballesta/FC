@@ -48,19 +48,24 @@
         :filter-included-fields="selected"
         :filter="filter"
         >
-          <!-- Table Actions-->
-          <template #cell(actions)="row">
-            <b-button v-b-modal.info-modal class="btn input-xs btn-info">
-              Información
-            </b-button>
-            <b-button class="btn input-xs btn-secondary" @click="row.toggleDetails">
-            Cambiar estado
-            </b-button>
+  <!-- Table Actions-->
+            <!-- Info modal -->
+            <template #cell(actions)="row">
+              <b-button class="btn button-xs btn-info mr-1" @click="info(row.item ,$event.target)">
+                Información
+              </b-button>
+                    
+              <b-modal :id="infoModal.id" size="xl" title= "Información del pedido" ok-only>
+                <pre>{{ infoModal.content }}</pre>
+              </b-modal>
+            <!-- Change state -->
+            <b-dropdown id="dropdown-1" class="m-md-2 dropdown-xs" size="sm" text="Estado">
+              <b-dropdown-item v-model="state_selected" >Entregado</b-dropdown-item>
+              <b-dropdown-item>Enviado</b-dropdown-item>
+              <b-dropdown-item>Preparación en proceso</b-dropdown-item>
+            </b-dropdown>
           
-             <!-- Info modal -->
-            <b-modal id="info-modal" centered title= "Información del pedido">
-              Hello
-            </b-modal>
+     
           </template>
 
       </b-table>
@@ -129,6 +134,10 @@ export default {
         filter: '',
         polling: null,
         length: 0,
+        infoModal: {
+          id: 'info-modal',
+          content: ''
+        }
       }
   },
   mounted() {
@@ -156,6 +165,23 @@ export default {
             this.getOrders()
         }, 10000)
       },
+      info(item, button) {
+        this.infoModal.content = `
+        Referencia: ${item.reference} 
+        Fecha: ${item.date_add} 
+        Nombre y Apellidos: ${item.firstname} ${item.lastname} 
+        Dirección de envío: ${item.address1}, ${item.address2}, ${item.city}, ${item.country_name}, 
+        Productos: ${item.product_name}
+        Cantidad: ${item.product_quantity} 
+        Estado del Pedido: ${item.name}`
+
+        this.$root.$emit('bv::show::modal', this.infoModal.id, button)
+      },
+
+       resetInfoModal() {
+        this.infoModal.content = ''
+      },
+
       
   },
   beforeDestroy(){
@@ -170,15 +196,19 @@ export default {
 
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
+
 <style scoped>
 
-/*Make Action Buttons extra small*/ 
-.input-xs {
+.button-xs {
   height: 22px;
   padding: 2px 5px;
   font-size: 12px;
-  line-height: 1.5; /* If Placeholder of the input is moved up, rem/modify this. */
+  line-height: 1.5; 
   border-radius: 3px;
+}
+.dropdown-xs {
+  position: relative;
+  display: inline-block;
+  
 }
 </style>
