@@ -1,6 +1,43 @@
 <template>
   <b-container>
 
+     <!-- Filter controls -->
+      <b-row>
+        <b-col lg="6" class="my-1">
+          <b-form-group
+            label="Filter"
+            label-for="filter-input"
+            label-cols-sm="3"
+            label-align-sm="right"
+            label-size="sm"
+            class="mb-0"
+          >
+            <b-input-group size="sm">
+              <b-form-input
+                id="filter-input"
+                v-model="filter"
+                type="search"
+                placeholder="Type to Search"
+              ></b-form-input>
+
+              <b-input-group-append>
+                <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
+              </b-input-group-append>
+            </b-input-group>
+          </b-form-group>
+        </b-col>
+
+        <b-col lg="6" class="my-1">
+          <div>
+              <b-form-group label="Filtrar por:" v-slot="{ ariaDescribedby }">
+                <b-form-radio v-model="selected" :aria-describedby="ariaDescribedby" name="selected" value="name">Estado del Pedido</b-form-radio>
+                <b-form-radio v-model="selected" :aria-describedby="ariaDescribedby" name="selected" value="country_name">País</b-form-radio>
+              </b-form-group>
+            </div>
+        </b-col> 
+      </b-row>
+ 
+   <!-- Table -->
     <div class= "container mt-4" id="tableOfOrders">
       <b-table 
         bordered
@@ -8,13 +45,25 @@
         fixed
         :fields="fields"
         :items="orders"
+        :filter-included-fields="selected"
+        :filter="filter"
         >
-
-          <template>
-            <b-button variant="danger">Editar</b-button>
+          <!-- Table Actions-->
+          <template #cell(actions)="row">
+            <b-button v-b-modal.info-modal class="btn input-xs btn-info">
+              Información
+            </b-button>
+            <b-button class="btn input-xs btn-secondary" @click="row.toggleDetails">
+            Cambiar estado
+            </b-button>
+          
+             <!-- Info modal -->
+            <b-modal id="info-modal" centered title= "Información del pedido">
+              Hello
+            </b-modal>
           </template>
+
       </b-table>
-      <h1>{{test}}</h1>
     </div>
   </b-container>
 </template>
@@ -24,17 +73,14 @@ export default {
   name: 'HelloWorld',
   data() {
       return {
-        test: 0,
         fields: [
           {
            key: 'reference',
            label: 'Identificador',
-           sortable: true
           },
           {
            key: 'date_add',
            label: 'Fecha',
-          
           },
           {
             key: 'firstname',
@@ -54,10 +100,10 @@ export default {
           },
           {
            key:  'city',
-           label: 'Ciudad',
+           label: 'Ciudad',       
           },
           {
-           key: 'reference',
+           key: 'country_name',
            label: 'País',
           },
           {
@@ -70,49 +116,69 @@ export default {
           },
           {
            key: 'name',
-           label: 'Estado del pedido',
+           label: 'Estado del pedido',      
           },
           {
+           key: 'actions',
            label: 'Editar',
           },
         
         ],
-        orders: {}
+        orders: {},
+        selected: '',
+        filter: '',
+        polling: null,
+        length: 0,
       }
   },
   mounted() {
     this.getOrders();
+    //this.renderData();
+
   },
   methods: {
-        getOrders() {
-        this.$http.get('http://127.0.0.1:8000/api/orders/')
+      getOrders() {
+          this.$http.get('http://127.0.0.1:8000/api/orders/')
           .then(Response => {
-            this.orders = Response.body.order;
-            console.log(Response.body.order[0].reference);
+              this.orders = Response.body.order;
+              console.log(Response.body.order[0].reference);
+              this.length = Response.body.order.length;
+              console.log(Response.body.order.length);
 
-          }, error => {
-            console.log("ERROR = ", error);
-          });
+
+            }, error => {
+              console.log("ERROR = ", error);
+            });
       },
 
+      renderData() {
+        this.polling = setInterval(() => {
+            this.getOrders()
+        }, 10000)
+      },
+      
+  },
+  beforeDestroy(){
+    clearInterval(this.polling)
+  },
+
+  created() {
+    this.renderData()
   }
+ 
 }
+
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
+
+/*Make Action Buttons extra small*/ 
+.input-xs {
+  height: 22px;
+  padding: 2px 5px;
+  font-size: 12px;
+  line-height: 1.5; /* If Placeholder of the input is moved up, rem/modify this. */
+  border-radius: 3px;
 }
 </style>

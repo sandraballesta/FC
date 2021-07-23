@@ -16,3 +16,4 @@ use Illuminate\Support\Facades\Route;
 
 //Get Orders
 Route::get('orders', [\App\Http\Controllers\OrderController::class, 'getOrder']);
+Route::get('address', [\App\Http\Controllers\OrderController::class, 'getAddress']);
