@@ -14,7 +14,7 @@ class OrderController extends Controller
 
         $order = DB::table('orders')
 
-            ->select('orders.reference','orders.date_add', 'customer.firstname',
+            ->select(  'orders.id_order', 'orders.reference','orders.date_add', 'customer.firstname',
                 'customer.lastname', 'address.address1', 'address.address2', 'address.city', 'address.country_name',
                  'order_detail.product_name', 'order_detail.product_quantity', 'order_state_lang.name')
             ->joinSub($this->getAddress(),'address', function($join) {
@@ -37,6 +37,28 @@ class OrderController extends Controller
             ->join('country_lang', 'country_lang.id_country','address.id_country');
 
 
+    }
+
+    //Modify Current State
+    public function updateState(Request $request, $id_order) {
+
+        DB::table('orders')
+            ->where([
+                'id_order' => $id_order
+            ])
+            ->update([
+                'current_state' => $request->current_state
+            ]);
+
+        $response = DB::table('orders')
+            ->where([
+                'id_order' => $id_order
+            ])
+            ->get();
+
+
+
+        return response()->json(["order" => $response], 200);
     }
 
 }

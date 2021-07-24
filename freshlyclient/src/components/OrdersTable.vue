@@ -47,6 +47,7 @@
         :items="orders"
         :filter-included-fields="selected"
         :filter="filter"
+        
         >
   <!-- Table Actions-->
             <!-- Info modal -->
@@ -58,14 +59,11 @@
               <b-modal :id="infoModal.id" size="xl" title= "Información del pedido" ok-only>
                 <pre>{{ infoModal.content }}</pre>
               </b-modal>
+
             <!-- Change state -->
-            <b-dropdown id="dropdown-1" class="m-md-2 dropdown-xs" size="sm" text="Estado">
-              <b-dropdown-item v-model="state_selected" >Entregado</b-dropdown-item>
-              <b-dropdown-item>Enviado</b-dropdown-item>
-              <b-dropdown-item>Preparación en proceso</b-dropdown-item>
-            </b-dropdown>
-          
-     
+            <b-form-select class= "form-xs" v-model="row.item.name" :options= "options" size="sm" @change="updateState(row.item)">
+              Estado
+            </b-form-select>
           </template>
 
       </b-table>
@@ -75,7 +73,7 @@
 
 <script>
 export default {
-  name: 'HelloWorld',
+  name: 'OrdersTable',
   data() {
       return {
         fields: [
@@ -121,7 +119,7 @@ export default {
           },
           {
            key: 'name',
-           label: 'Estado del pedido',      
+           label: 'Estado del pedido',  
           },
           {
            key: 'actions',
@@ -133,38 +131,65 @@ export default {
         selected: '',
         filter: '',
         polling: null,
-        length: 0,
         infoModal: {
           id: 'info-modal',
           content: ''
-        }
+        },
+        state_selected: "",
+        options: [
+        {value: '1', text: 'Pago pendiente'},
+        {value: '2', text: 'Pago aceptado'},
+        {value: '3', text: 'Preparación en proceso'},
+        {value: '4', text: 'Enviado'},
+        {value: '5', text: 'Entregado'},
+        {value: '6', text: 'Cancelado'},
+        {value: '7', text: 'Reembolso'},
+        {value: '8', text: 'Error en el pago'}
+        ],
+
       }
   },
   mounted() {
     this.getOrders();
-    //this.renderData();
+    this.renderData();
 
   },
   methods: {
+
+      //Get all orders from DB
       getOrders() {
           this.$http.get('http://127.0.0.1:8000/api/orders/')
           .then(Response => {
               this.orders = Response.body.order;
-              console.log(Response.body.order[0].reference);
-              this.length = Response.body.order.length;
-              console.log(Response.body.order.length);
-
-
             }, error => {
               console.log("ERROR = ", error);
             });
       },
 
+      updateState(item) {
+         const body = JSON.stringify({
+          current_state: item.name,
+         });
+          
+          this.$http.put(`http://127.0.0.1:8000/api/update/${item.id_order}`, body)
+          .then(Response => {
+             console.log("Current State= ", Response.body.order);  
+              this.getOrders();
+              
+            }, error => {
+              console.log("ERROR = ", error);
+            });
+      },
+
+
+      //Actualize DB every 3 seconds
       renderData() {
         this.polling = setInterval(() => {
             this.getOrders()
-        }, 10000)
+        }, 3000)
       },
+
+      //Information displayed in modal
       info(item, button) {
         this.infoModal.content = `
         Referencia: ${item.reference} 
@@ -184,6 +209,8 @@ export default {
 
       
   },
+
+  //Prevent timer running after switching to another page
   beforeDestroy(){
     clearInterval(this.polling)
   },
@@ -206,9 +233,8 @@ export default {
   line-height: 1.5; 
   border-radius: 3px;
 }
-.dropdown-xs {
-  position: relative;
-  display: inline-block;
+.form-xs {
+  width: 75%;
   
 }
 </style>
