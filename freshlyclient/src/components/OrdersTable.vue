@@ -35,8 +35,43 @@
               </b-form-group>
             </div>
         </b-col> 
+      
+
+    <!-- Paginació -->
+     
+        <b-col sm="5" md="6" class="my-1">
+          <b-form-group
+            label="Mostrar resultados"
+            label-for="per-page-select"
+            label-cols-sm="6"
+            label-cols-md="4"
+            label-cols-lg="3"
+            label-align-sm="right"
+            label-size="sm"
+            class="mb-0"
+          >
+            <b-form-select
+              id="per-page-select"
+              v-model="perPage"
+              :options="pageOptions"
+              size="sm"
+             
+            ></b-form-select>
+          </b-form-group>
+        </b-col>
+
+        <b-col sm="7" md="6" class="my-1">
+          <b-pagination
+            v-model="currentPage"
+            :total-rows="totalRows"
+            :per-page="perPage"
+            align="fill"
+            size="sm"
+            class="my-0"
+          ></b-pagination>
+        </b-col>
       </b-row>
- 
+  
    <!-- Table -->
     <div class= "container mt-4" id="tableOfOrders">
       <b-table 
@@ -47,7 +82,8 @@
         :items="orders"
         :filter-included-fields="selected"
         :filter="filter"
-        
+        :per-page="perPage"  
+        :current-page="currentPage"     
         >
   <!-- Table Actions-->
             <!-- Info modal -->
@@ -146,6 +182,10 @@ export default {
         {value: '7', text: 'Reembolso'},
         {value: '8', text: 'Error en el pago'}
         ],
+        perPage: 5,
+        pageOptions: [5, 10, 15, { value: this.totalRows, text: "Mostrar todos" }],
+        totalRows: 1,
+        currentPage: 1,
 
       }
   },
@@ -161,6 +201,7 @@ export default {
           this.$http.get('http://127.0.0.1:8000/api/orders/')
           .then(Response => {
               this.orders = Response.body.order;
+              this.totalRows = Response.body.order.length;
             }, error => {
               console.log("ERROR = ", error);
             });

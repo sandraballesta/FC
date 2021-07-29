@@ -16,4 +16,5 @@ use Illuminate\Support\Facades\Route;
 
 //Get Orders
 Route::get('orders', [\App\Http\Controllers\OrderController::class, 'getOrder']);
+//Update State
 Route::put('update/{id_order}', [\App\Http\Controllers\OrderController::class, 'updateState']);
